@@ -2,7 +2,7 @@
 
 AndroidApp3 is a location-based treasure hunt game created for a weekly Android development assignment.
 
-The app celebrates Cambridge, Ontario by guiding participants through a sequence of 20 local stops. The hunt begins at Cambridge City Hall. After a participant marks the current stop as visited, the app reveals the clue and map marker for the next stop. Completing all 20 stops makes the participant eligible for a vacation draw.
+The app celebrates Cambridge, Ontario by guiding participants through a sequence of 20 local stops. The hunt begins at Cambridge City Hall. After a participant marks the current stop as visited, the next location becomes available.
 
 ## Core Features
 
@@ -32,6 +32,15 @@ This project adapts concepts from the PlaceBook tutorial:
 - RecyclerView and adapters
 - Navigation drawer
 - Location details and notes/clues
+
+## Screenshots
+
+<p align="center">
+  <img src="screen/Screenshot_20260828_183943.png" alt="Screenshot 1" width="250" />
+  <img src="screen/Screenshot_20260828_183956.png" alt="Screenshot 2" width="250" />
+  <img src="screen/Screenshot_20260828_184009.png" alt="Screenshot 3" width="250" />
+  <img src="screen/Screenshot_20260828_184035.png" alt="Screenshot 4" width="250" />
+</p>
 
 ## Setup
 
