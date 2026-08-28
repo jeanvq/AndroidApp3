@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cambridge Treasure Hunt</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="progress_format">Progress: %1$d / %2$d</string>
+    <string name="current_stop_format">Stop #%1$d · %2$s</string>
+    <string name="hunt_complete">All 20 Stops Complete!</string>
+    <string name="completion_message">Congratulations! You completed the Cambridge Treasure Hunt and are now eligible to enter the vacation draw.</string>
+</resources>
