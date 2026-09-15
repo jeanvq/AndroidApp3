@@ -137,19 +137,13 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    /**
-     * Reads the saved progress from Room and updates the visible UI.
-     */
+    /** Reads the saved progress from Room and updates the visible UI. */
     private suspend fun refreshHuntState() {
         val visitedCount = repository.getVisitedCount()
         val nextPlace = repository.getCurrentPlace()
         currentPlace = nextPlace
 
-        binding.progressText.text = getString(
-            R.string.progress_format,
-            visitedCount,
-            TOTAL_STOPS
-        )
+        binding.progressText.text = getString(R.string.progress_format, visitedCount, TOTAL_STOPS)
 
         if (nextPlace == null) {
             showCompletedState()
@@ -163,16 +157,11 @@ class MainActivity : AppCompatActivity(),
             binding.markVisitedButton.isEnabled = true
             binding.viewDetailsButton.isEnabled = true
 
-            if (::map.isInitialized) {
-                showCurrentPlaceOnMap(nextPlace)
-            }
+            if (::map.isInitialized) showCurrentPlaceOnMap(nextPlace)
         }
     }
 
-    /**
-     * Only the currently unlocked stop can be marked as visited.
-     * After it is saved in Room, refreshHuntState() automatically reveals the next stop.
-     */
+    /** Only the currently unlocked stop can be marked as visited. */
     private fun markCurrentPlaceVisited() {
         val place = currentPlace ?: return
 
@@ -182,11 +171,7 @@ class MainActivity : AppCompatActivity(),
             .setPositiveButton("Yes") { _, _ ->
                 lifecycleScope.launch {
                     repository.markVisited(place.id)
-                    Toast.makeText(
-                        this@MainActivity,
-                        "${place.name} completed!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@MainActivity, "${place.name} completed!", Toast.LENGTH_SHORT).show()
                     refreshHuntState()
                 }
             }
@@ -196,7 +181,6 @@ class MainActivity : AppCompatActivity(),
 
     private fun showCurrentPlaceOnMap(place: TreasurePlace) {
         val location = LatLng(place.latitude, place.longitude)
-
         map.clear()
         map.addMarker(
             MarkerOptions()
@@ -212,10 +196,7 @@ class MainActivity : AppCompatActivity(),
         binding.clueText.text = getString(R.string.completion_message)
         binding.markVisitedButton.isEnabled = false
         binding.viewDetailsButton.isEnabled = false
-
-        if (::map.isInitialized) {
-            map.clear()
-        }
+        if (::map.isInitialized) map.clear()
 
         AlertDialog.Builder(this)
             .setTitle("Treasure Hunt Complete!")
@@ -225,42 +206,29 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun requestLocationPermissionIfNeeded() {
-        val fineLocationGranted =
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-
-        val coarseLocationGranted =
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+        val fineLocationGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseLocationGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
         if (fineLocationGranted || coarseLocationGranted) {
             enableMyLocation()
         } else {
             locationPermissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
             )
         }
     }
 
     private fun enableMyLocation() {
         if (!::map.isInitialized) return
-
         val hasPermission =
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
         if (hasPermission) {
             map.isMyLocationEnabled = true
@@ -270,6 +238,15 @@ class MainActivity : AppCompatActivity(),
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.nav_home -> {
+                // Return to the welcome screen without creating duplicate Home screens.
+                val intent = Intent(this, HomeActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                startActivity(intent)
+                finish()
+            }
+
             R.id.nav_map -> {
                 // Already on the map screen.
             }
@@ -295,11 +272,7 @@ class MainActivity : AppCompatActivity(),
                 lifecycleScope.launch {
                     repository.resetProgress()
                     refreshHuntState()
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Progress reset.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@MainActivity, "Progress reset.", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)
