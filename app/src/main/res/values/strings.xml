@@ -7,4 +7,7 @@
     <string name="current_stop_format">Stop #%1$d · %2$s</string>
     <string name="hunt_complete">All 20 Stops Complete!</string>
     <string name="completion_message">Congratulations! You completed the Cambridge Treasure Hunt and are now eligible to enter the vacation draw.</string>
+    <string name="home_progress_format">%1$d / %2$d stops</string>
+    <string name="start_hunt">START HUNT</string>
+    <string name="continue_hunt">CONTINUE HUNT</string>
 </resources>
