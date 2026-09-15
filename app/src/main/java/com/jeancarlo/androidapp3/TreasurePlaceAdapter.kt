@@ -9,16 +9,19 @@ import com.jeancarlo.androidapp3.databinding.ItemTreasurePlaceBinding
 
 /**
  * RecyclerView adapter for the 20 hunt locations.
+ * It also shows whether each stop is visited, current, or still locked.
  */
 class TreasurePlaceAdapter(
     private val onPlaceClicked: (TreasurePlace) -> Unit
 ) : RecyclerView.Adapter<TreasurePlaceAdapter.PlaceViewHolder>() {
 
     private val places = mutableListOf<TreasurePlace>()
+    private var currentPlaceId: Int? = null
 
     fun submitPlaces(newPlaces: List<TreasurePlace>) {
         places.clear()
         places.addAll(newPlaces)
+        currentPlaceId = newPlaces.firstOrNull { !it.isVisited }?.id
         notifyDataSetChanged()
     }
 
@@ -45,13 +48,27 @@ class TreasurePlaceAdapter(
             binding.stopNumberText.text = "#${place.huntOrder}"
             binding.placeNameText.text = place.name
             binding.addressText.text = place.address
-            binding.statusText.text =
-                if (place.isVisited) "VISITED" else "NOT VISITED"
 
-            val statusColor = if (place.isVisited) {
-                R.color.success_green
-            } else {
-                R.color.text_secondary
+            // Keep the three hunt states easy to recognize in the list.
+            val statusColor: Int
+            when {
+                place.isVisited -> {
+                    binding.statusText.text = "✓ VISITED"
+                    statusColor = R.color.success_green
+                    binding.root.alpha = 1f
+                }
+
+                place.id == currentPlaceId -> {
+                    binding.statusText.text = "CURRENT STOP"
+                    statusColor = R.color.accent_gold
+                    binding.root.alpha = 1f
+                }
+
+                else -> {
+                    binding.statusText.text = "LOCKED"
+                    statusColor = R.color.text_secondary
+                    binding.root.alpha = 0.72f
+                }
             }
 
             binding.statusText.setTextColor(
