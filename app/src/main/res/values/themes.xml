@@ -4,11 +4,21 @@
     <style name="Theme.AndroidApp3" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/surface_dark</item>
         <item name="colorPrimaryVariant">@color/background_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/accent_gold</item>
         <item name="android:statusBarColor">@color/background_dark</item>
         <item name="android:navigationBarColor">@color/background_dark</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
         <item name="android:fontFamily">sans</item>
+        <item name="toolbarStyle">@style/Widget.AndroidApp3.Toolbar</item>
+    </style>
+
+    <style name="Widget.AndroidApp3.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
+        <item name="android:background">@color/surface_dark</item>
+        <item name="titleTextColor">@color/white</item>
+        <item name="subtitleTextColor">@color/text_secondary</item>
+        <item name="navigationIconTint">@color/accent_gold</item>
     </style>
 
 </resources>
