@@ -25,16 +25,7 @@ import com.jeancarlo.androidapp3.data.TreasureRepository
 import com.jeancarlo.androidapp3.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 
-/**
- * Main treasure-hunt screen.
- *
- * This Activity combines several concepts from PlaceBook:
- * - Google Maps
- * - runtime location permissions
- * - navigation drawer
- * - Room-backed location data
- * - marker and camera control
- */
+/** Main treasure-hunt screen with Maps, Room progress, and drawer navigation. */
 class MainActivity : AppCompatActivity(),
     OnMapReadyCallback,
     NavigationView.OnNavigationItemSelectedListener {
@@ -42,32 +33,23 @@ class MainActivity : AppCompatActivity(),
     private lateinit var binding: ActivityMainBinding
     private lateinit var repository: TreasureRepository
     private lateinit var map: GoogleMap
-
     private var currentPlace: TreasurePlace? = null
 
     private val locationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-            val granted =
-                result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-                    result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-
-            if (granted) {
-                enableMyLocation()
-            } else {
-                Toast.makeText(
-                    this,
-                    "Location permission was not granted. The hunt can still be used manually.",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+            val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            if (granted) enableMyLocation() else Toast.makeText(
+                this,
+                "Location permission was not granted. The hunt can still be used manually.",
+                Toast.LENGTH_LONG
+            ).show()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         setSupportActionBar(binding.toolbar)
 
         val drawerToggle = ActionBarDrawerToggle(
@@ -79,32 +61,26 @@ class MainActivity : AppCompatActivity(),
         )
         binding.drawerLayout.addDrawerListener(drawerToggle)
         drawerToggle.syncState()
+
+        // ActionBarDrawerToggle creates its own icon, so tint it explicitly for contrast.
+        drawerToggle.drawerArrowDrawable.color = ContextCompat.getColor(this, R.color.accent_gold)
         binding.navigationView.setNavigationItemSelectedListener(this)
 
         val database = AppDatabase.getDatabase(applicationContext)
         repository = TreasureRepository(database.treasurePlaceDao())
 
-        // Obtain the Google Map asynchronously.
-        val mapFragment =
-            supportFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        binding.markVisitedButton.setOnClickListener {
-            markCurrentPlaceVisited()
-        }
-
+        binding.markVisitedButton.setOnClickListener { markCurrentPlaceVisited() }
         binding.viewDetailsButton.setOnClickListener {
             currentPlace?.let { place ->
-                val intent = Intent(this, PlaceDetailActivity::class.java)
-                intent.putExtra(PlaceDetailActivity.EXTRA_PLACE_ID, place.id)
-                startActivity(intent)
+                startActivity(Intent(this, PlaceDetailActivity::class.java).apply {
+                    putExtra(PlaceDetailActivity.EXTRA_PLACE_ID, place.id)
+                })
             }
         }
-
-        // Simple, visible navigation to the complete list of treasure-hunt stops.
-        binding.allStopsButton.setOnClickListener {
-            startActivity(Intent(this, PlacesActivity::class.java))
-        }
+        binding.allStopsButton.setOnClickListener { startActivity(Intent(this, PlacesActivity::class.java)) }
 
         lifecycleScope.launch {
             repository.seedDatabaseIfNeeded()
@@ -114,49 +90,34 @@ class MainActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
-
-        // Refresh after returning from another screen in case data changed.
-        if (::repository.isInitialized) {
-            lifecycleScope.launch {
-                refreshHuntState()
-            }
-        }
+        if (::repository.isInitialized) lifecycleScope.launch { refreshHuntState() }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-
         map.uiSettings.isZoomControlsEnabled = true
         map.uiSettings.isCompassEnabled = true
-
         requestLocationPermissionIfNeeded()
-
         lifecycleScope.launch {
             repository.seedDatabaseIfNeeded()
             refreshHuntState()
         }
     }
 
-    /** Reads the saved progress from Room and updates the visible UI. */
+    /** Reads saved Room progress and refreshes the current hunt state. */
     private suspend fun refreshHuntState() {
         val visitedCount = repository.getVisitedCount()
         val nextPlace = repository.getCurrentPlace()
         currentPlace = nextPlace
-
         binding.progressText.text = getString(R.string.progress_format, visitedCount, TOTAL_STOPS)
 
         if (nextPlace == null) {
             showCompletedState()
         } else {
-            binding.currentStopText.text = getString(
-                R.string.current_stop_format,
-                nextPlace.huntOrder,
-                nextPlace.name
-            )
+            binding.currentStopText.text = getString(R.string.current_stop_format, nextPlace.huntOrder, nextPlace.name)
             binding.clueText.text = nextPlace.clue
             binding.markVisitedButton.isEnabled = true
             binding.viewDetailsButton.isEnabled = true
-
             if (::map.isInitialized) showCurrentPlaceOnMap(nextPlace)
         }
     }
@@ -164,7 +125,6 @@ class MainActivity : AppCompatActivity(),
     /** Only the currently unlocked stop can be marked as visited. */
     private fun markCurrentPlaceVisited() {
         val place = currentPlace ?: return
-
         AlertDialog.Builder(this)
             .setTitle("Confirm Visit")
             .setMessage("Mark ${place.name} as visited?")
@@ -182,12 +142,7 @@ class MainActivity : AppCompatActivity(),
     private fun showCurrentPlaceOnMap(place: TreasurePlace) {
         val location = LatLng(place.latitude, place.longitude)
         map.clear()
-        map.addMarker(
-            MarkerOptions()
-                .position(location)
-                .title("#${place.huntOrder} ${place.name}")
-                .snippet(place.address)
-        )
+        map.addMarker(MarkerOptions().position(location).title("#${place.huntOrder} ${place.name}").snippet(place.address))
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
     }
 
@@ -197,7 +152,6 @@ class MainActivity : AppCompatActivity(),
         binding.markVisitedButton.isEnabled = false
         binding.viewDetailsButton.isEnabled = false
         if (::map.isInitialized) map.clear()
-
         AlertDialog.Builder(this)
             .setTitle("Treasure Hunt Complete!")
             .setMessage(getString(R.string.completion_message))
@@ -206,30 +160,17 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun requestLocationPermissionIfNeeded() {
-        val fineLocationGranted = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-        val coarseLocationGranted = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        if (fineLocationGranted || coarseLocationGranted) {
-            enableMyLocation()
-        } else {
-            locationPermissionLauncher.launch(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-            )
-        }
+        val fine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val coarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (fine || coarse) enableMyLocation() else locationPermissionLauncher.launch(
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        )
     }
 
     private fun enableMyLocation() {
         if (!::map.isInitialized) return
-        val hasPermission =
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-
+        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
         if (hasPermission) {
             map.isMyLocationEnabled = true
             map.uiSettings.isMyLocationButtonEnabled = true
@@ -239,27 +180,15 @@ class MainActivity : AppCompatActivity(),
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_home -> {
-                // Return to the welcome screen without creating duplicate Home screens.
-                val intent = Intent(this, HomeActivity::class.java).apply {
+                startActivity(Intent(this, HomeActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
-                startActivity(intent)
+                })
                 finish()
             }
-
-            R.id.nav_map -> {
-                // Already on the map screen.
-            }
-
-            R.id.nav_places -> {
-                startActivity(Intent(this, PlacesActivity::class.java))
-            }
-
-            R.id.nav_reset -> {
-                confirmReset()
-            }
+            R.id.nav_map -> Unit
+            R.id.nav_places -> startActivity(Intent(this, PlacesActivity::class.java))
+            R.id.nav_reset -> confirmReset()
         }
-
         binding.drawerLayout.closeDrawers()
         return true
     }
