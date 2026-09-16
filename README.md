@@ -43,11 +43,28 @@ This project adapts concepts from the PlaceBook tutorial:
 
 ## Screenshots
 
+### Home
+
 <p align="center">
-  <img src="screen/Screenshot_20260828_183943.png" alt="Screenshot 1" width="250" />
-  <img src="screen/Screenshot_20260828_183956.png" alt="Screenshot 2" width="250" />
-  <img src="screen/Screenshot_20260828_184009.png" alt="Screenshot 3" width="250" />
-  <img src="screen/Screenshot_20260828_184035.png" alt="Screenshot 4" width="250" />
+  <img src="screen/home.png" alt="Cambridge Treasure Hunt home screen" width="280" />
+</p>
+
+### Navigation Drawer
+
+<p align="center">
+  <img src="screen/navigation-drawer.png" alt="Cambridge Treasure Hunt navigation drawer" width="280" />
+</p>
+
+### Treasure Map
+
+<p align="center">
+  <img src="screen/treasure-map.png" alt="Cambridge Treasure Hunt map screen" width="280" />
+</p>
+
+### Place Details
+
+<p align="center">
+  <img src="screen/place-details.png" alt="Cambridge Treasure Hunt place details screen" width="280" />
 </p>
 
 ## Setup
